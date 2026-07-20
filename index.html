@@ -23,6 +23,7 @@
   .buy-btn { width:100%; background:linear-gradient(90deg,#00e5ff,#0090ff); color:#001318; border:none; padding:16px; border-radius:30px; font-size:17px; font-weight:700; box-shadow:0 0 20px rgba(0,229,255,0.5); cursor:pointer; }
   .price-line { text-align:center; margin-top:8px; font-size:14px; color:#7fdfff; }
   .old-price { text-decoration:line-through; color:#556; margin-right:8px; }
+  .buy-note { text-align:center; font-size:12px; color:#7fdfff; margin-top:10px; }
   .section { padding:20px 16px; border-top:1px solid #131c21; }
   .section h2 { font-size:18px; color:#fff; margin-bottom:14px; }
   .media-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; }
@@ -74,8 +75,9 @@
 </div>
 
 <div class="buy-btn-wrap">
-  <button class="buy-btn" onclick="window.location.href='https://rzp.io/rzp/gTgmiydv'">Buy Now - ₹1029</button>
+  <button class="buy-btn" onclick="window.open('https://rzp.io/rzp/gTgmiydv','_blank')">Buy Now - ₹1029</button>
   <div class="price-line"><span class="old-price">₹1999</span> Limited Time Offer</div>
+  <div class="buy-note">After payment, return to this page and use "Get Access Key" below with your mobile number</div>
 </div>
 
 <div class="section">
@@ -111,9 +113,9 @@
 </div>
 
 <div class="section">
-  <h2>Get Access Key (Fallback)</h2>
+  <h2>Get Access Key</h2>
   <div class="access-box">
-    <p>Already paid but missed your key? Enter the same mobile number used during payment. Works only within 10 minutes of your payment.</p>
+    <p>Already paid? Enter the same mobile number used during payment to get your access key and download link. Valid only within 10 minutes of successful payment.</p>
     <input type="tel" id="phoneInput" placeholder="Enter your mobile number">
     <button onclick="getAccessKey()">Get Access Key</button>
     <div class="status-msg" id="statusMsg"></div>
