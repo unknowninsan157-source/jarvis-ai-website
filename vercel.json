@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/webhook.js": { "memory": 256 },
+    "api/get-key.js": { "memory": 256 },
+    "api/get-key-by-payment.js": { "memory": 256 }
+  }
+}
