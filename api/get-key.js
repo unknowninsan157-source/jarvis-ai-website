@@ -3,11 +3,9 @@ const admin = require("firebase-admin");
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   });
 }
 const db = admin.firestore();
-const bucket = admin.storage().bucket();
 
 const DURATION_MS = 10 * 60 * 1000;
 
@@ -58,11 +56,7 @@ module.exports = async (req, res) => {
 
     const minutesLeft = Math.ceil((DURATION_MS - elapsed) / 60000);
     const accessKey = generateAccessKey();
-    const file = bucket.file("jarvis-app.apk");
-    const [downloadUrl] = await file.getSignedUrl({
-      action: "read",
-      expires: Date.now() + 10 * 60 * 1000,
-    });
+    const downloadUrl = "/jarvis-app.apk";
 
     return res.status(200).json({ status: "ok", accessKey, downloadUrl, minutesLeft });
   } catch (err) {
