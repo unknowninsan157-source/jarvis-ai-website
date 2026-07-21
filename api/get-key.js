@@ -56,7 +56,7 @@ module.exports = async (req, res) => {
 
     const minutesLeft = Math.ceil((DURATION_MS - elapsed) / 60000);
     const accessKey = generateAccessKey();
-    const downloadUrl = "/jarvis-app.apk";
+    const downloadUrl = process.env.APK_DOWNLOAD_URL;
 
     return res.status(200).json({ status: "ok", accessKey, downloadUrl, minutesLeft });
   } catch (err) {
