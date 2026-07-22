@@ -54,8 +54,13 @@
   .review-stars { color:#00e5ff; font-size:13px; }
   .review-text { font-size:13px; color:#cdeef5; line-height:1.5; }
 
-  .social-row { display:flex; gap:14px; padding:20px 16px 30px; }
-  .social-btn { flex:1; text-align:center; padding:14px; border-radius:14px; border:1px solid #00e5ff55; color:#00e5ff; text-decoration:none; font-size:14px; font-weight:600; background:#0e1418; }
+  .developer-box { text-align:center; margin-bottom:16px; }
+  .developer-photo { width:84px; height:84px; border-radius:50%; object-fit:cover; border:2px solid #00e5ff; box-shadow:0 0 15px rgba(0,229,255,0.5); }
+  .developer-role { color:#7fdfff; font-size:12px; margin-top:10px; letter-spacing:1px; }
+  .developer-name { color:#fff; font-size:18px; margin-top:4px; letter-spacing:1px; }
+
+  .social-row { display:flex; gap:14px; padding:10px 0; }
+  .social-btn { flex:1; text-align:center; padding:14px; border-radius:14px; border:1px solid #00e5ff55; color:#00e5ff; text-decoration:none; font-size:13px; font-weight:600; background:#0e1418; }
 
   .tutorial-link { display:block; text-align:center; color:#00e5ff; font-size:13px; margin-top:6px; text-decoration:underline; }
   footer { text-align:center; font-size:12px; color:#456; padding:20px; }
@@ -86,8 +91,8 @@
 </div>
 
 <div class="buy-wrap">
-  <button class="buy-btn" id="actionBtn" onclick="handleActionClick()">BUY NOW - ₹999</button>
-  <div class="price-line" id="priceLine"><span class="old-price">₹1999</span> LIMITED TIME OFFER</div>
+  <button class="buy-btn" onclick="handleBuyClick()">BUY NOW - ₹999</button>
+  <div class="price-line"><span class="old-price">₹1999</span> LIMITED TIME OFFER</div>
 </div>
 
 <div class="download-panel" id="downloadPanel">
@@ -138,9 +143,21 @@
   <a class="tutorial-link" href="https://youtu.be/LylXg-La8jI" target="_blank">WATCH FULL SETUP TUTORIAL</a>
 </div>
 
-<div class="social-row">
-  <a class="social-btn" href="https://wa.me/919752059896" target="_blank">WHATSAPP</a>
-  <a class="social-btn" href="https://www.instagram.com/jarvisai.jr" target="_blank">INSTAGRAM</a>
+<div class="section">
+  <h2>App & Web Developer</h2>
+  <div class="developer-box">
+    <img class="developer-photo" src="developer.png" alt="Roshan Patail">
+    <div class="developer-role">App & Web Developer</div>
+    <div class="developer-name">ROSHAN PATAIL</div>
+  </div>
+  <div class="social-row">
+    <a class="social-btn" href="https://wa.me/919752059896" target="_blank">WHATSAPP</a>
+    <a class="social-btn" href="https://www.instagram.com/jarvisai.jr" target="_blank">INSTAGRAM</a>
+  </div>
+  <div class="social-row">
+    <a class="social-btn" href="https://telegram.me/roshan_patail" target="_blank">TELEGRAM CHANNEL</a>
+    <a class="social-btn" href="https://t.me/rptechchat" target="_blank">CHAT WITH ME</a>
+  </div>
 </div>
 
 <footer>© 2026 J.A.R.V.I.S. ALL RIGHTS RESERVED.</footer>
@@ -150,31 +167,44 @@
 </div>
 
 <script>
-function handleActionClick(){
-  const btn = document.getElementById('actionBtn');
-  if(btn.dataset.mode === 'download'){
-    const panel = document.getElementById('downloadPanel');
-    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
-  } else {
-    window.open('https://rzp.io/rzp/M7yBXZXd', '_blank');
-    localStorage.setItem('jarvisBuyClicked', 'true');
-    switchToDownloadMode();
-    document.getElementById('downloadPanel').style.display = 'block';
+const BUY_WINDOW_MS = 10 * 60 * 1000;
+
+function handleBuyClick(){
+  window.open('https://rzp.io/rzp/M7yBXZXd', '_blank');
+  localStorage.setItem('jarvisBuyClickTime', Date.now().toString());
+  showPanel();
+  const remaining = BUY_WINDOW_MS;
+  setTimeout(hidePanelAndReset, remaining);
+}
+
+function showPanel(){
+  document.getElementById('downloadPanel').style.display = 'block';
+}
+
+function hidePanel(){
+  document.getElementById('downloadPanel').style.display = 'none';
+}
+
+function hidePanelAndReset(){
+  localStorage.removeItem('jarvisBuyClickTime');
+  hidePanel();
+}
+
+function checkBuyWindow(){
+  const t = localStorage.getItem('jarvisBuyClickTime');
+  if(t){
+    const elapsed = Date.now() - parseInt(t);
+    if(elapsed < BUY_WINDOW_MS){
+      showPanel();
+      setTimeout(hidePanelAndReset, BUY_WINDOW_MS - elapsed);
+    } else {
+      localStorage.removeItem('jarvisBuyClickTime');
+      hidePanel();
+    }
   }
 }
 
-function switchToDownloadMode(){
-  const btn = document.getElementById('actionBtn');
-  btn.textContent = 'DOWNLOAD';
-  btn.dataset.mode = 'download';
-  document.getElementById('priceLine').style.display = 'none';
-}
-
-window.addEventListener('load', () => {
-  if(localStorage.getItem('jarvisBuyClicked') === 'true'){
-    switchToDownloadMode();
-  }
-});
+window.addEventListener('load', checkBuyWindow);
 
 async function getAccessKey(){
   const phone = document.getElementById('phoneInput').value.trim();
@@ -224,18 +254,30 @@ function copyKey(){
 
 function openLightbox(type, src){
   const content = document.getElementById('lightboxContent');
-  if(type === 'video'){
-    content.innerHTML = '<video src="' + src + '" controls autoplay></video>';
-  } else {
-    content.innerHTML = '<img src="' + src + '">';
-  }
+  content.innerHTML = type === 'video'
+    ? '<video src="' + src + '" controls autoplay></video>'
+    : '<img src="' + src + '">';
   document.getElementById('lightbox').style.display = 'flex';
+  history.pushState({ jarvisLightbox: true }, '');
 }
 
 function closeLightbox(){
-  document.getElementById('lightbox').style.display = 'none';
+  const lb = document.getElementById('lightbox');
+  if(lb.style.display === 'none') return;
+  lb.style.display = 'none';
   document.getElementById('lightboxContent').innerHTML = '';
+  if(history.state && history.state.jarvisLightbox){
+    history.back();
+  }
 }
+
+window.addEventListener('popstate', function(){
+  const lb = document.getElementById('lightbox');
+  if(lb.style.display === 'flex'){
+    lb.style.display = 'none';
+    document.getElementById('lightboxContent').innerHTML = '';
+  }
+});
 </script>
 
 </body>
