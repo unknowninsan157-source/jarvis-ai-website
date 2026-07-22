@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J.A.R.V.I.S - Download & Buy</title>
+<title>JARVIS 4.0 - Download & Buy</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
   body { background:#0a0e12; color:#e6faff; padding-bottom:60px; text-transform:uppercase; }
   .topbar { display:flex; align-items:center; justify-content:space-between; padding:16px; }
   .back { color:#00e5ff; font-size:24px; text-decoration:none; }
-  .app-header { display:flex; padding:10px 16px 20px; align-items:flex-start; gap:16px; }
+  .app-header { display:flex; padding:10px 16px 20px; align-items:center; gap:16px; }
   .app-icon { width:96px; height:96px; border-radius:22px; object-fit:cover; box-shadow:0 0 25px rgba(0,229,255,0.5); border:1px solid rgba(0,229,255,0.4);}
-  .app-info h1 { font-size:24px; color:#fff; line-height:1.3; letter-spacing:1px; }
-  .version-tag { color:#7fdfff; font-size:12px; margin-top:4px; }
-  .dev-name { color:#00e5ff; font-size:14px; margin-top:6px; }
+  .app-info h1 { font-size:26px; color:#fff; line-height:1.3; letter-spacing:1px; }
   .stats-row { display:flex; padding:0 16px 16px; text-align:center; }
   .stats-row .stat { flex:1; padding:0 8px; }
   .stats-row .stat:not(:last-child) { border-right:1px solid #1c2a30; }
@@ -23,7 +21,7 @@
   .buy-wrap { padding:10px 16px 10px; }
   .buy-btn { width:100%; background:linear-gradient(90deg,#00e5ff,#0090ff); color:#001318; border:none; padding:16px; border-radius:30px; font-size:17px; font-weight:700; box-shadow:0 0 20px rgba(0,229,255,0.5); cursor:pointer; }
   .price-line { text-align:center; margin-top:8px; font-size:14px; color:#7fdfff; }
-  .old-price { text-decoration:line-through; color:#556; margin-right:8px; }
+  .old-price { text-decoration:line-through; margin-right:8px; }
 
   .download-panel { padding:0 16px 20px; display:none; }
   .download-panel input { width:100%; padding:12px; border-radius:10px; border:1px solid #164; background:#0e1418; color:#e6faff; margin-top:10px; text-transform:none; }
@@ -76,11 +74,9 @@
 <div class="topbar"><a href="#" class="back">&#8592;</a></div>
 
 <div class="app-header">
-  <img class="app-icon" src="logo.png" alt="J.A.R.V.I.S Logo">
+  <img class="app-icon" src="logo.png" alt="JARVIS 4.0 Logo">
   <div class="app-info">
-    <h1 class="glow">J.A.R.V.I.S</h1>
-    <div class="version-tag">VERSION 4.0</div>
-    <div class="dev-name">Jarvis AI</div>
+    <h1 class="glow">JARVIS 4.0</h1>
   </div>
 </div>
 
@@ -122,12 +118,12 @@
 
 <div class="section">
   <h2>Preview Video</h2>
-  <div class="yt-wrap"><iframe src="https://www.youtube.com/embed/LylXg-La8jI" title="J.A.R.V.I.S Preview" allowfullscreen></iframe></div>
+  <div class="yt-wrap"><iframe src="https://www.youtube.com/embed/LylXg-La8jI" title="JARVIS 4.0 Preview" allowfullscreen></iframe></div>
 </div>
 
 <div class="section">
   <h2>About This App</h2>
-  <p class="about-text">J.A.R.V.I.S is your personal smart AI voice assistant built for everyday productivity.</p>
+  <p class="about-text">JARVIS 4.0 is your personal smart AI voice assistant built for everyday productivity.</p>
   <div style="margin-top:12px;">
     <span class="tag">#1 TOP AI APP</span>
     <span class="tag">ASSISTANT</span>
@@ -160,7 +156,7 @@
   </div>
 </div>
 
-<footer>© 2026 J.A.R.V.I.S. ALL RIGHTS RESERVED.</footer>
+<footer>© 2026 JARVIS 4.0. ALL RIGHTS RESERVED.</footer>
 
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <div class="lightbox-content" id="lightboxContent"></div>
@@ -173,8 +169,7 @@ function handleBuyClick(){
   window.open('https://rzp.io/rzp/M7yBXZXd', '_blank');
   localStorage.setItem('jarvisBuyClickTime', Date.now().toString());
   showPanel();
-  const remaining = BUY_WINDOW_MS;
-  setTimeout(hidePanelAndReset, remaining);
+  setTimeout(hidePanelAndReset, BUY_WINDOW_MS);
 }
 
 function showPanel(){
