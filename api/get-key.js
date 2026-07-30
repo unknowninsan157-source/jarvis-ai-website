@@ -8,8 +8,19 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 const DURATION_MS = 10 * 60 * 1000;
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 function pad(n, width = 2) { return n.toString().padStart(width, "0"); }
+
+function getISTParts() {
+  const istTime = new Date(Date.now() + IST_OFFSET_MS);
+  return {
+    day: istTime.getUTCDate(),
+    minute: istTime.getUTCMinutes(),
+    hour24: istTime.getUTCHours(),
+    year: istTime.getUTCFullYear(),
+  };
+}
 
 function randomChars(count) {
   const pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#£$%^&*".split("");
@@ -22,14 +33,18 @@ function randomChars(count) {
 }
 
 function generateAccessKey() {
-  const now = new Date();
-  const dayRev = parseInt(pad(now.getDate()).split("").reverse().join(""));
+  const { day, minute, hour24, year } = getISTParts();
+
+  const dayRev = parseInt(pad(day).split("").reverse().join(""));
   const dayCalc = dayRev + 12;
-  const minFirstDigit = parseInt(pad(now.getMinutes())[0]);
+
+  const minFirstDigit = parseInt(pad(minute)[0]);
   const minCalc = minFirstDigit + 11;
-  const yearRev = parseInt(pad(now.getFullYear() % 100).split("").reverse().join(""));
+
+  const yearRev = parseInt(pad(year % 100).split("").reverse().join(""));
   const yearCalc = yearRev - 2;
-  let hour12 = now.getHours() % 12; if (hour12 === 0) hour12 = 12;
+
+  let hour12 = hour24 % 12; if (hour12 === 0) hour12 = 12;
   const hourRev = parseInt(pad(hour12).split("").reverse().join(""));
   const hourCalc = pad(hourRev + 8, 2);
 
@@ -54,11 +69,10 @@ module.exports = async (req, res) => {
       return res.status(200).json({ status: "expired" });
     }
 
-    const minutesLeft = Math.ceil((DURATION_MS - elapsed) / 60000);
     const accessKey = generateAccessKey();
-    const downloadUrl = "/api/download?phone=" + phone;
+    const downloadUrl = process.env.APK_DOWNLOAD_URL;
 
-    return res.status(200).json({ status: "ok", accessKey, downloadUrl, minutesLeft });
+    return res.status(200).json({ status: "ok", accessKey, downloadUrl });
   } catch (err) {
     return res.status(500).json({ status: "error", message: err.message });
   }
