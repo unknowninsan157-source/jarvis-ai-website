@@ -8,6 +8,8 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
+const REQUIRED_AMOUNT_PAISE = 99900; // ₹999
+
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ status: "error" });
@@ -33,12 +35,13 @@ module.exports = async (req, res) => {
           ? req.body.payload.payment.entity
           : null;
 
-      if (paymentEntity) {
+      if (paymentEntity && paymentEntity.amount >= REQUIRED_AMOUNT_PAISE) {
         const paidAt = Date.now();
 
         await db.collection("payments_by_id").doc(paymentEntity.id).set({
           paid: true,
           paidAt,
+          amount: paymentEntity.amount,
         });
 
         if (paymentEntity.contact) {
@@ -46,6 +49,7 @@ module.exports = async (req, res) => {
           await db.collection("payments_by_phone").doc(phone).set({
             paid: true,
             paidAt,
+            amount: paymentEntity.amount,
           });
         }
       }
