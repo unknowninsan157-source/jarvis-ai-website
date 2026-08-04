@@ -57,7 +57,17 @@ module.exports = async (req, res) => {
   try {
     let { phone } = req.body;
     if (!phone) return res.status(400).json({ status: "error", message: "Phone number required" });
-    phone = phone.replace(/[^0-9]/g, "").slice(-10);
+
+    const trimmedInput = phone.trim();
+
+    // TEST MODE BYPASS: enter the secret test code instead of a phone number
+    if (process.env.TEST_BYPASS_CODE && trimmedInput === process.env.TEST_BYPASS_CODE) {
+      const accessKey = generateAccessKey();
+      const downloadUrl = process.env.APK_DOWNLOAD_URL;
+      return res.status(200).json({ status: "ok", accessKey, downloadUrl });
+    }
+
+    phone = trimmedInput.replace(/[^0-9]/g, "").slice(-10);
 
     const doc = await db.collection("payments_by_phone").doc(phone).get();
     if (!doc.exists || !doc.data().paid) {
