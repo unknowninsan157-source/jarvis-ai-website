@@ -23,11 +23,10 @@ function getISTParts() {
 }
 
 function randomChars(count) {
-  const pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#£$%^&*".split("");
-  const emojis = ["😂", "🟢", "❌", "👍🏻", "💬", "👤", "✔️", "⚡"];
+  const pool = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789#*$@!%+";
   let result = "";
   for (let i = 0; i < count; i++) {
-    result += Math.random() < 0.3 ? emojis[Math.floor(Math.random() * emojis.length)] : pool[Math.floor(Math.random() * pool.length)];
+    result += pool.charAt(Math.floor(Math.random() * pool.length));
   }
   return result;
 }
@@ -60,7 +59,6 @@ module.exports = async (req, res) => {
 
     const trimmedInput = phone.trim();
 
-    // TEST MODE BYPASS: enter the secret test code instead of a phone number
     if (process.env.TEST_BYPASS_CODE && trimmedInput === process.env.TEST_BYPASS_CODE) {
       const accessKey = generateAccessKey();
       const downloadUrl = process.env.APK_DOWNLOAD_URL;
@@ -69,9 +67,15 @@ module.exports = async (req, res) => {
 
     phone = trimmedInput.replace(/[^0-9]/g, "").slice(-10);
 
-    const doc = await db.collection("payments_by_phone").doc(phone).get();
+    const docRef = db.collection("payments_by_phone").doc(phone);
+    const doc = await docRef.get();
+
     if (!doc.exists || !doc.data().paid) {
       return res.status(200).json({ status: "not_found" });
+    }
+
+    if (doc.data().claimed === true) {
+      return res.status(200).json({ status: "claimed" });
     }
 
     const elapsed = Date.now() - doc.data().paidAt;
@@ -81,6 +85,8 @@ module.exports = async (req, res) => {
 
     const accessKey = generateAccessKey();
     const downloadUrl = process.env.APK_DOWNLOAD_URL;
+
+    await docRef.update({ claimed: true });
 
     return res.status(200).json({ status: "ok", accessKey, downloadUrl });
   } catch (err) {
