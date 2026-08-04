@@ -8,7 +8,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const REQUIRED_AMOUNT_PAISE = 99900; // ₹999
+const REQUIRED_AMOUNT_PAISE = 99900;
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -50,6 +50,7 @@ module.exports = async (req, res) => {
             paid: true,
             paidAt,
             amount: paymentEntity.amount,
+            claimed: false,
           });
         }
       }
