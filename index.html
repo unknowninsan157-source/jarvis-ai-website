@@ -44,11 +44,15 @@
   .price-line { text-align:center; margin-top:8px; font-size:14px; color:#7fdfff; }
   .old-price { text-decoration:line-through; margin-right:8px; }
 
-  .download-panel { padding:0 16px 20px; }
+  .download-panel { padding:0 16px 20px; display:none; }
   .download-panel input { width:100%; padding:12px; border-radius:10px; border:1px solid #164; background:#0e1418; color:#e6faff; margin-top:10px; text-transform:none; }
   .download-panel button { width:100%; padding:14px; border-radius:20px; border:none; background:linear-gradient(90deg,#00e5ff,#0090ff); color:#001318; font-weight:700; font-size:15px; cursor:pointer; margin-top:10px; }
   .status-msg { font-size:13px; color:#ffb3b3; margin-top:8px; text-transform:none; }
-  .hint-text { font-size:12px; color:#ff9d9d; margin-top:10px; text-align:center; text-transform:none; display:none; }
+  .result-box { margin-top:14px; padding:14px; border-radius:12px; background:#0e1418; border:1px solid #00e5ff33; display:none; }
+  .key-value { font-family:monospace; font-size:18px; color:#fff; word-break:break-all; margin-bottom:10px; text-transform:none; }
+  .copy-btn, .download-btn { display:block; width:100%; padding:12px; border-radius:16px; font-size:14px; font-weight:600; border:1px solid #00e5ff; background:transparent; color:#00e5ff; text-decoration:none; text-align:center; margin-top:8px; cursor:pointer; }
+  .download-btn { background:linear-gradient(90deg,#00e5ff,#0090ff); color:#001318; border:none; }
+  .hint-text { font-size:12px; color:#ff9d9d; margin-top:10px; text-align:center; text-transform:none; }
   .wa-fallback { display:none; text-align:center; margin-top:10px; }
   .wa-fallback a { color:#00e5ff; font-size:13px; text-decoration:underline; }
 
@@ -123,11 +127,16 @@
   <div class="price-line"><span class="old-price">₹1999</span> LIMITED TIME OFFER</div>
 </div>
 
-<div class="download-panel">
+<div class="download-panel" id="downloadPanel">
   <input type="tel" id="phoneInput" placeholder="Enter your mobile number">
   <button onclick="getAccessKey()">VERIFY & DOWNLOAD</button>
   <div class="status-msg" id="statusMsg"></div>
-  <div class="hint-text" id="hintText">PLEASE USE ACCESS KEY AS POSSIBLE AS YOU CAN IT'LL EXPIRE SOON WITHIN 5 MINUTES</div>
+  <div class="result-box" id="resultBox">
+    <div class="key-value" id="keyValue">-</div>
+    <button class="copy-btn" onclick="copyKey()">COPY ACCESS KEY</button>
+    <a class="download-btn" id="downloadBtn" href="#">DOWNLOAD JARVIS</a>
+    <div class="hint-text">PLEASE USE ACCESS KEY AS POSSIBLE AS YOU CAN IT'LL EXPIRE SOON WITHIN 5 MINUTES</div>
+  </div>
   <div class="wa-fallback" id="waFallback">
     <a href="https://wa.me/919752059896?text=Hi%2C%20my%20access%20key%20window%20expired.%20Here%20is%20my%20payment%20screenshot." target="_blank">WINDOW EXPIRED? GET YOUR KEY ON WHATSAPP</a>
   </div>
@@ -297,14 +306,32 @@
 </div>
 
 <script>
+const BUY_WINDOW_MS = 10 * 60 * 1000;
+let buyTimer = null;
+
+function handleBuyClick(){
+  window.open('https://rzp.io/rzp/mtNpHuik', '_blank');
+  showPanel();
+  if(buyTimer) clearTimeout(buyTimer);
+  buyTimer = setTimeout(hidePanel, BUY_WINDOW_MS);
+}
+
+function showPanel(){
+  document.getElementById('downloadPanel').style.display = 'block';
+}
+
+function hidePanel(){
+  document.getElementById('downloadPanel').style.display = 'none';
+}
+
 async function getAccessKey(){
   const phone = document.getElementById('phoneInput').value.trim();
   const statusMsg = document.getElementById('statusMsg');
+  const resultBox = document.getElementById('resultBox');
   const waFallback = document.getElementById('waFallback');
-  const hintText = document.getElementById('hintText');
   statusMsg.textContent = "";
+  resultBox.style.display = "none";
   waFallback.style.display = "none";
-  hintText.style.display = "none";
 
   if(!phone){
     statusMsg.textContent = "Please enter your mobile number.";
@@ -321,22 +348,11 @@ async function getAccessKey(){
     const data = await res.json();
 
     if(data.status === "ok"){
-      statusMsg.textContent = "Verified! Starting download...";
-      hintText.style.display = "block";
-
-      const link = document.createElement('a');
-      link.href = data.downloadUrl;
-      link.download = "jarvis-app.apk";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      navigator.clipboard.writeText(data.accessKey).catch(()=>{});
-
-      setTimeout(() => {
-        alert("Your Access Key (copied to clipboard): " + data.accessKey);
-      }, 500);
-
+      statusMsg.textContent = "";
+      document.getElementById('keyValue').textContent = data.accessKey;
+      document.getElementById('downloadBtn').href = data.downloadUrl;
+      resultBox.style.display = "block";
+      if(buyTimer) clearTimeout(buyTimer);
     } else if(data.status === "not_found"){
       statusMsg.textContent = "No payment found for this number. Check the number or contact support.";
     } else if(data.status === "expired"){
@@ -350,8 +366,9 @@ async function getAccessKey(){
   }
 }
 
-function handleBuyClick(){
-  window.open('https://rzp.io/rzp/M7yBXZXd', '_blank');
+function copyKey(){
+  const val = document.getElementById('keyValue').textContent;
+  navigator.clipboard.writeText(val).then(()=>{ alert("Access key copied!"); });
 }
 
 function openLightbox(type, src){
