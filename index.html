@@ -310,13 +310,22 @@ const BUY_WINDOW_MS = 10 * 60 * 1000;
 let buyTimer = null;
 
 async function handleBuyClick(){
+  const buyBtn = document.querySelector('.buy-btn');
+  buyBtn.disabled = true;
+  buyBtn.textContent = "PLEASE WAIT...";
+
   try {
     const res = await fetch('/api/create-order', { method: 'POST' });
     const data = await res.json();
+
+    buyBtn.disabled = false;
+    buyBtn.textContent = "BUY NOW - ₹999";
+
     if(data.status !== 'ok'){
-      alert('Unable to start payment right now. Please try again.');
+      alert('Unable to start payment right now. Please try again in a moment.');
       return;
     }
+
     const options = {
       key: data.keyId,
       amount: data.amount,
@@ -325,16 +334,21 @@ async function handleBuyClick(){
       description: "JARVIS AI Voice Assistant App",
       order_id: data.orderId,
       handler: function(response){
-        resetPanel();
-        showPanel();
-        if(buyTimer) clearTimeout(buyTimer);
-        buyTimer = setTimeout(hidePanel, BUY_WINDOW_MS);
+        // Payment success confirmation, panel already visible below
       },
       theme: { color: "#00e5ff" }
     };
     const rzp = new Razorpay(options);
     rzp.open();
+
+    resetPanel();
+    showPanel();
+    if(buyTimer) clearTimeout(buyTimer);
+    buyTimer = setTimeout(hidePanel, BUY_WINDOW_MS);
+
   } catch(err){
+    buyBtn.disabled = false;
+    buyBtn.textContent = "BUY NOW - ₹999";
     alert('Network error. Please try again.');
   }
 }
@@ -349,7 +363,7 @@ function hidePanel(){
 
 function resetPanel(){
   document.getElementById('resultBox').style.display = 'none';
-  document.getElementById('phoneInput').closest('.download-panel').querySelector('input').style.display = 'block';
+  document.getElementById('phoneInput').style.display = 'block';
   document.querySelector('.download-panel button').style.display = 'block';
   document.getElementById('phoneInput').value = '';
   document.getElementById('statusMsg').textContent = '';
