@@ -8,7 +8,15 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-const REQUIRED_AMOUNT_PAISE = 99900;
+const VALID_PRICES = [
+  { currency: "INR", amount: 99900 },
+  { currency: "USD", amount: 2900 },
+  { currency: "USD", amount: 1200 },
+];
+
+function isValidPayment(currency, amount) {
+  return VALID_PRICES.some((p) => p.currency === currency && amount >= p.amount);
+}
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -35,13 +43,14 @@ module.exports = async (req, res) => {
           ? req.body.payload.payment.entity
           : null;
 
-      if (paymentEntity && paymentEntity.amount >= REQUIRED_AMOUNT_PAISE) {
+      if (paymentEntity && isValidPayment(paymentEntity.currency, paymentEntity.amount)) {
         const paidAt = Date.now();
 
         await db.collection("payments_by_id").doc(paymentEntity.id).set({
           paid: true,
           paidAt,
           amount: paymentEntity.amount,
+          currency: paymentEntity.currency,
         });
 
         if (paymentEntity.contact) {
@@ -50,6 +59,7 @@ module.exports = async (req, res) => {
             paid: true,
             paidAt,
             amount: paymentEntity.amount,
+            currency: paymentEntity.currency,
             claimed: false,
           });
         }
