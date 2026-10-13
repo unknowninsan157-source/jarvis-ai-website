@@ -45,8 +45,12 @@
   .stars { color:#00e5ff; }
   .buy-wrap { padding:10px 16px 10px; }
   .buy-btn { width:100%; background:linear-gradient(90deg,#00e5ff,#0090ff); color:#001318; border:none; padding:16px; border-radius:30px; font-size:17px; font-weight:700; box-shadow:0 0 20px rgba(0,229,255,0.5); cursor:pointer; }
+  .buy-btn:disabled { opacity:0.6; }
   .price-line { text-align:center; margin-top:8px; font-size:14px; color:#7fdfff; }
   .old-price { text-decoration:line-through; margin-right:8px; }
+
+  .vpn-warning { display:none; margin:0 16px 10px; padding:14px; border-radius:12px; background:#2a0e0e; border:1px solid #ff4d4d55; color:#ff9d9d; font-size:13px; text-align:center; text-transform:none; }
+  .vpn-warning button { margin-top:10px; padding:10px 16px; border-radius:12px; border:1px solid #ff9d9d; background:transparent; color:#ff9d9d; font-size:12px; cursor:pointer; text-transform:uppercase; }
 
   .download-panel { padding:0 16px 20px; display:none; }
   .download-panel input { width:100%; padding:12px; border-radius:10px; border:1px solid #164; background:#0e1418; color:#e6faff; margin-top:10px; text-transform:none; }
@@ -140,8 +144,14 @@
 </div>
 
 <div class="buy-wrap">
-  <button class="buy-btn" onclick="handleBuyClick()">BUY NOW - ₹999</button>
-  <div class="price-line"><span class="old-price">₹1999</span> LIMITED TIME OFFER</div>
+  <button class="buy-btn" id="buyBtn" onclick="handleBuyClick()">BUY NOW - LOADING...</button>
+  <div class="price-line" id="priceLine">DETECTING YOUR REGION...</div>
+</div>
+
+<div class="vpn-warning" id="vpnWarning">
+  A VPN or Proxy was detected on your connection. Please turn off your VPN and refresh this page to continue.
+  <br>
+  <button onclick="location.reload()">Refresh Page</button>
 </div>
 
 <div class="download-panel" id="downloadPanel">
@@ -173,7 +183,7 @@
       <ul class="whats-new-list" style="counter-reset:wn 4;">
         <li>VOICE APP UNLOCK</li>
         <li>WHATSAPP CALL</li>
-        <li>AUTO VOICE GENDER</li>
+        <li>AUTO VOICE GENERATOR</li>
         <li>5+ NEW LANGUAGE</li>
         <li>WAKE WORD PRO</li>
         <li>WAKE UP BEHAVIOUR</li>
@@ -199,7 +209,7 @@
         <li>THEME FIXED</li>
         <li>MUSIC VISUALIZER REMOVED</li>
         <li>DUPLICATE HUD REMOVED</li>
-        <li>APP SIZE REDUCED FROM 50 MB TO 29 MB</li>
+        <li>APP SIZE REDUCED FROM 50MB TO 29MB</li>
         <li>& MANY MORE</li>
       </ul>
     </div>
@@ -365,9 +375,44 @@
 <script>
 const BUY_WINDOW_MS = 10 * 60 * 1000;
 let buyTimer = null;
+let currentPriceDisplay = "";
+let currentOldPriceDisplay = "";
+
+async function detectRegion(){
+  try{
+    const res = await fetch('/api/detect-region');
+    const data = await res.json();
+
+    if(data.isVPN){
+      document.getElementById('vpnWarning').style.display = 'block';
+      document.getElementById('buyBtn').disabled = true;
+      document.getElementById('buyBtn').textContent = "BUY NOW DISABLED";
+      document.getElementById('priceLine').textContent = "";
+      return;
+    }
+
+    currentPriceDisplay = data.display;
+    if(data.currency === 'INR'){
+      currentOldPriceDisplay = "₹1999";
+    } else if(data.amount >= 2900){
+      currentOldPriceDisplay = "$59";
+    } else {
+      currentOldPriceDisplay = "$24";
+    }
+
+    document.getElementById('buyBtn').textContent = "BUY NOW - " + currentPriceDisplay;
+    document.getElementById('priceLine').innerHTML = '<span class="old-price">' + currentOldPriceDisplay + '</span> LIMITED TIME OFFER';
+  } catch(err){
+    document.getElementById('buyBtn').textContent = "BUY NOW - ₹999";
+    document.getElementById('priceLine').innerHTML = '<span class="old-price">₹1999</span> LIMITED TIME OFFER';
+  }
+}
+
+window.addEventListener('load', detectRegion);
 
 async function handleBuyClick(){
-  const buyBtn = document.querySelector('.buy-btn');
+  const buyBtn = document.getElementById('buyBtn');
+  const originalText = buyBtn.textContent;
   buyBtn.disabled = true;
   buyBtn.textContent = "PLEASE WAIT...";
 
@@ -376,7 +421,14 @@ async function handleBuyClick(){
     const data = await res.json();
 
     buyBtn.disabled = false;
-    buyBtn.textContent = "BUY NOW - ₹999";
+    buyBtn.textContent = originalText;
+
+    if(data.status === 'vpn_detected'){
+      document.getElementById('vpnWarning').style.display = 'block';
+      buyBtn.disabled = true;
+      buyBtn.textContent = "BUY NOW DISABLED";
+      return;
+    }
 
     if(data.status !== 'ok'){
       alert('Unable to start payment right now. Please try again in a moment.');
@@ -386,7 +438,7 @@ async function handleBuyClick(){
     const options = {
       key: data.keyId,
       amount: data.amount,
-      currency: "INR",
+      currency: data.currency,
       name: "JARVIS 5.30",
       description: "JARVIS AI Voice Assistant App",
       order_id: data.orderId,
@@ -405,7 +457,7 @@ async function handleBuyClick(){
 
   } catch(err){
     buyBtn.disabled = false;
-    buyBtn.textContent = "BUY NOW - ₹999";
+    buyBtn.textContent = originalText;
     alert('Network error. Please try again.');
   }
 }
