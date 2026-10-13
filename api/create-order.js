@@ -8,8 +8,11 @@ function getClientIP(req) {
 
 async function getCountryCode(ip) {
   try {
-    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    const res = await fetch(`https://ipapi.co/${ip}/json/`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; JarvisAI/1.0)" },
+    });
     const data = await res.json();
+    if (data.error) return null;
     return data.country_code || null;
   } catch {
     return null;
@@ -29,7 +32,7 @@ async function checkVPN(ip) {
 }
 
 function getPricing(countryCode) {
-  if (countryCode === "IN") {
+  if (!countryCode || countryCode === "IN") {
     return { currency: "INR", amount: 99900 };
   }
   if (RICH_COUNTRIES.includes(countryCode)) {
