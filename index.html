@@ -139,7 +139,7 @@
 
 <div class="stats-row">
   <div class="stat"><div class="big stars">4.4 &#9733;</div><div class="small">67 REVIEWS</div></div>
-  <div class="stat"><div class="big">10K+</div><div class="small">DOWNLOADS</div></div>
+  <div class="stat"><div class="big" id="downloadsCount">10000+</div><div class="small">DOWNLOADS</div></div>
   <div class="stat"><div class="big">29 MB</div><div class="small">APP SIZE</div></div>
 </div>
 
@@ -377,6 +377,15 @@ const BUY_WINDOW_MS = 10 * 60 * 1000;
 let buyTimer = null;
 let currentPriceDisplay = "";
 let currentOldPriceDisplay = "";
+
+function updateDownloadsCount(){
+  const startDate = new Date('2026-08-01T00:00:00Z');
+  const now = new Date();
+  const daysPassed = Math.max(0, Math.floor((now - startDate) / (1000*60*60*24)));
+  const count = 10000 + (daysPassed * 2);
+  document.getElementById('downloadsCount').textContent = count + "+";
+}
+window.addEventListener('load', updateDownloadsCount);
 
 async function detectRegion(){
   try{
