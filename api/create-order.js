@@ -1,12 +1,25 @@
 const RICH_COUNTRIES = ["US", "GB", "RU", "CN", "JP"];
 
 function getClientIP(req) {
+  const cf = req.headers["cf-connecting-ip"];
+  if (cf) return cf.trim();
   const forwarded = req.headers["x-forwarded-for"];
   if (forwarded) return forwarded.split(",")[0].trim();
   return req.socket ? req.socket.remoteAddress : "";
 }
 
-async function getCountryCode(ip) {
+function getCountryFromHeaders(req) {
+  const candidates = [req.headers["cf-ipcountry"], req.headers["x-vercel-ip-country"]];
+  for (const c of candidates) {
+    if (c && /^[A-Za-z]{2}$/.test(c)) {
+      const code = c.toUpperCase();
+      if (code !== "XX" && code !== "T1") return code;
+    }
+  }
+  return null;
+}
+
+async function getCountryFromAPI(ip) {
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; JarvisAI/1.0)" },
@@ -46,7 +59,8 @@ module.exports = async (req, res) => {
 
   try {
     const ip = getClientIP(req);
-    const countryCode = await getCountryCode(ip);
+    let countryCode = getCountryFromHeaders(req);
+    if (!countryCode) countryCode = await getCountryFromAPI(ip);
     const isVPN = await checkVPN(ip);
 
     if (isVPN) {
