@@ -1,0 +1,17 @@
+{
+  "name": "jarvis-ai-website",
+  "main": "src/index.js",
+  "compatibility_date": "2025-01-01",
+  "keep_vars": true,
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "jarvis-payments",
+      "database_id": "9368f9b7-06f7-4dc6-8df1-d4a580815158"
+    }
+  ]
+}
